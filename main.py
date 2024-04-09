@@ -1,7 +1,9 @@
-#Importing dependencies
+#====================|Importing Dependencies|====================
 import numpy as np
 import pandas as pd
 
+#User-defined classes
+from corpus import corpus
 #====================|1. Importing Datasets|====================
 
 #Importing first dataset
@@ -24,3 +26,7 @@ labels_b.reset_index(drop = True, inplace = True)
 combined_labels = pd.concat([labels_a, labels_b], ignore_index=True)
 
 #====================|2. Dataset Analysis|====================
+my_dataset = corpus(combined_dataset, combined_labels)
+my_dataset.show_class_distribution()
+my_dataset.show_tweet_length_distribution()
+

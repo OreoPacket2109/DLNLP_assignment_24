@@ -1,20 +1,13 @@
-#Importing dependencies
-import numpy as np
+#====================|Importing Dependencies|====================
 import re
-import tensorflow as tf
 import nltk
-import pandas as pd
-import matplotlib.pyplot as plt
-from keras import Sequential
-from keras.layers import LSTM, Dense, Dropout
-from keras.utils import to_categorical
-from nltk.corpus import stopwords
-from sklearn.metrics import confusion_matrix, accuracy_score
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-import seaborn as sns
 
+#nltk
+from nltk.corpus import stopwords
+
+#====================|Class tweet|====================
+
+#Class for storing information about individual tweets
 class tweet():
     def __init__(self, raw_text, label):
         #raw_text stores the original tweet obtained from the dataset
