@@ -18,9 +18,9 @@ from corpus import corpus
 #====================|Class lstm|====================
 #class for storing information about the lstm model
 class lstm():
-    def __init__(self, X_train, y_train, X_test, y_test, num_classes):
+    def __init__(self, X_train, y_train, X_test, y_test, num_classes, tweet_length):
         #Train and test sets
-        self.X_train = X_train
+        self.X_train = np.reshape(X_train, (X_train.shape[0], tweet_length, -1))
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
@@ -121,5 +121,7 @@ class lstm():
 
         for i in range(len(self.y_test)):
             if(self.y_test[i] != y_pred[i]):
-                misclassified_text = tokenizer.sequences_to_texts(self.X_test[i])
-                y_misclassified.append([misclassified_text, y_pred[i], self.y_test[i]])
+                misclassified_sequence = self.X_test[i].tolist()
+                misclassified_text = tokenizer.sequences_to_texts([misclassified_sequence])
+                print(misclassified_text)
+                #y_misclassified.append([misclassified_text, y_pred[i], self.y_test[i]])
