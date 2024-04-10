@@ -1,5 +1,4 @@
 #====================|Importing Dependencies|====================
-import random
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,9 +6,6 @@ import matplotlib.pyplot as plt
 from keras.utils import to_categorical
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-
-#nltk
-from nltk.wsd import lesk
 
 #sklearn
 from sklearn.model_selection import train_test_split
@@ -98,50 +94,21 @@ class corpus():
     #Function for showing class distribution as a pie chart
     def show_class_distribution(self):
 
+        #Creates a 1x2 plot. First subplot shows the training set's class distribution. Second subplot shows the test set's class distribution.
         fig, axes = plt.subplots(nrows = 1, ncols = 2, figsize = (10,10))
 
+        #Creating first subplot
         axes[0].pie(self.train_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 14})
         axes[0].set_title("Training Set", fontsize= 16)
 
+        #Creating second subplot
         axes[1].pie(self.test_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 14})
         axes[1].set_title("Test Set", fontsize= 16)
 
+        #Adding legend to the plot
         plt.legend(['Hate Speech (0)', 'Offensive (1)', 'Neither (2)'], bbox_to_anchor=(1.05, 1.0), loc='upper left', fontsize = 14)
         plt.tight_layout()
         plt.show()
-
-    #Function for sorting dataset
-    def sort_dataset(self):
-
-        #X0 stores class 0 tweets, y0 stores class 0 labels
-        X0 = []
-        y0 = []
-
-        #X1 stores class 1 tweets, y1 stores class 1 labels
-        X1 = []
-        y1 = []
-
-        #X2 stores class 2 tweets, y2 stores class 2 labels
-        X2 = []
-        y2 = []
-
-        #Loops through all tweets in the datasets, and appends them to the appropriate lists
-        for i in range(self.number_of_tweets):
-            #E.g., if the current tweet's label == 0, its content is appended to X0, and its label is appended to y0
-            if(self.labels[i] == 0):
-                X0.append(self.clean_dataset[i])
-                y0.append(self.labels[i])
-
-            elif(self.labels[i] == 1):
-                X1.append(self.clean_dataset[i])
-                y1.append(self.labels[i])
-
-            elif(self.labels[i] == 2):
-                X2.append(self.clean_dataset[i])
-                y2.append(self.labels[i])
-
-        #Returns the lists containing the sorted tweets and their labels
-        return X0, X1, X2, y0, y1, y2
 
     #Function for splitting the dataset into training and testing sets
     def get_train_test_data(self):
@@ -161,21 +128,23 @@ class corpus():
 
         #Finding the longest tweet in the training set
         for i in range(len(X_train)):
-
             #tweet_length stores the length of the current tweet
             tweet_length = len(X_train[i])
 
-            #If tweet_length is larger than the longest_tweet encountered so far, it is set as the new longest_tweet
+            #If tweet_length is larger than the longest_train_tweet encountered so far, it is set as the new longest_train_tweet
             if tweet_length > self.longest_train_tweet:
                 self.longest_train_tweet = tweet_length
 
-
+        #Finding the longest tweet in the test set
         for i in range(len(X_test)):
+            #tweet_length stores the length of the current tweet from the test set
             tweet_length = len(X_test[i])
 
+            #If tweet_length is larger than the longest_test_tweet encountered so far, it is set as the new longest_test_tweet
             if tweet_length > self.longest_test_tweet:
                 self.longest_test_tweet = tweet_length
 
+        #Gets the distribution of tweet lengths for the training and test sets
         self.X_train_length_distribution = self.get_tweet_length_distribution(X_train, self.longest_train_tweet)
         self.X_test_length_distribution = self.get_tweet_length_distribution(X_test, self.longest_test_tweet)
 
@@ -195,7 +164,7 @@ class corpus():
         #Keeps y_test as a scalar label (e.g., y_test[i] = 0 if i^th tweet belongs to class 0)
         y_test = np.array(y_test).astype(np.int32)
 
-        #Returns the train and test sets
+        #Returns the train and test sets. y_train_one_hot will be used to fit the model (since the model wants one-hot-encoded labels), while y_train (the scalar version of the labels) will be used to find the train set's class distribution (since get_class_distirbution checks a tweet's class by checking its scalar label (whether it's 0, 1, or 2, not [1 0 0], [0 1 0], or [0 0 1])
         return [X_train, X_test, y_train_one_hot, y_test, y_train]
 
     #Function for getting the vocab size
@@ -213,31 +182,36 @@ class corpus():
             tweet_length = len(input_dataset[i])
             return_distribution[tweet_length] = return_distribution[tweet_length] + 1
 
-        print(return_distribution)
         return return_distribution
 
-    #second input argument = set type (either test or train)
+    #Function for showing the distribution of tweet lengths for the train and test sets
     def show_tweet_length_distribution(self):
 
+        #Creates arrays containing numbers from 0 to the largest tweet in the training/testing set. This will be used as the plot's x-axis
         train_tweet_lengths = np.array([i for i in range(1, len(self.X_train_length_distribution) + 1)])
         test_tweet_lengths = np.array([i for i in range(1, len(self.X_test_length_distribution) + 1)])
 
+        #Creates array for storing the number of tweets with 0, 1, 2, ... words. E.g., train_length_freqs[10] = number of tweets from the training set that are 10 words long. This will be used as the plot's y-axis.
         train_length_freqs = self.X_train_length_distribution
         test_length_freqs = self.X_test_length_distribution
 
+        #Creates a 1x2 plot. First subplot = training set's tweet length distribution. Second subplot = test set's tweet length distribution.
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
+        #Plotting the first subplot
         axes[0].bar(train_tweet_lengths, train_length_freqs)
         axes[0].set_yscale('log')
         axes[0].set_xlabel("Tweet Length", fontsize=14)
         axes[0].set_ylabel("Frequency", fontsize=14)
         axes[0].set_title("Training Set", fontsize=16)
 
+        #Plotting the second subplot
         axes[1].bar(test_tweet_lengths, test_length_freqs)
         axes[1].set_yscale('log')
         axes[1].set_xlabel("Tweet Length", fontsize=14)
         axes[1].set_ylabel("Frequency", fontsize=14)
         axes[1].set_title("Test Set", fontsize=16)
 
+        #Showing the plot
         plt.tight_layout()
         plt.show()
