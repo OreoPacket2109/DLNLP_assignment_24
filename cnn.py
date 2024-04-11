@@ -15,9 +15,11 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 
 #Class for storing details about the cnn, and for training and testing the cnn
 class cnn():
-    def __init__(self, X_train, y_train, X_test, y_test, num_classes, max_length):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, max_length):
         self.X_train = X_train
         self.y_train = y_train
+        self.X_val = X_val
+        self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
 
@@ -28,11 +30,19 @@ class cnn():
 
     #Function for training the model
     def train(self, epoch, batch_size):
-        #history stores the model's performance at each epoch
-        history = self.model.fit(self.X_train, self.y_train, epochs = epoch, batch_size = batch_size, class_weight = {0:3, 1:1, 2:2})
+        history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
 
-        #Plotting the model's accuracy vs. epoch
-        plt.plot(history.history['accuracy'])
+        train_accuracy = history.history['accuracy']
+        val_accuracy = history.history['val_accuracy']
+
+        epoch_number = [i for i in range(1, epoch + 1)]
+
+        plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
+        plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
+        plt.xlabel('Accuracy vs. Epoch')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        plt.show()
 
     #Function for creating the model
     def create_model(self):

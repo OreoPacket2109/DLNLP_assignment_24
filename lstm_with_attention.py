@@ -7,10 +7,12 @@ import numpy as np
 
 
 class lstm_with_attention():
-    def __init__(self, X_train, y_train, X_test, y_test, input_length, vocab_size, embedding_dim, lstm_units, dense_units, num_classes, dropout):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, input_length, vocab_size, embedding_dim, lstm_units, dense_units, num_classes, dropout):
         #Train and test sets
         self.X_train = X_train
         self.y_train = y_train
+        self.X_val = X_val
+        self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test #scalar labels
 
@@ -61,9 +63,19 @@ class lstm_with_attention():
         return model
 
     def train(self, epoch, batch_size):
-        history = self.model.fit(self.X_train, self.y_train, epochs = epoch, batch_size = batch_size)
+        history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
 
-        plt.plot(history.history['accuracy'])
+        train_accuracy = history.history['accuracy']
+        val_accuracy = history.history['val_accuracy']
+
+        epoch_number = [i for i in range(1, epoch + 1)]
+
+        plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
+        plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
+        plt.xlabel('Accuracy vs. Epoch')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        plt.show()
 
     def test(self, tokenizer):
         #y_pred_one_hot stores the 3 unit vector outputted by the model.

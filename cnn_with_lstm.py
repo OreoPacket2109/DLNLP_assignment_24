@@ -20,10 +20,12 @@ nltk.download('wordnet')
 
 #Contains information about the hybrid model, and functions for training and testing the model
 class cnn_with_lstm():
-    def __init__(self, X_train, y_train, X_test, y_test, max_seq_length, embedding_dim, vocab_size, num_classes):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, max_seq_length, embedding_dim, vocab_size, num_classes):
         #Train and test sets
         self.X_train = X_train
         self.y_train = y_train
+        self.X_val = X_val
+        self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
 
@@ -68,8 +70,19 @@ class cnn_with_lstm():
 
     #Function for training the model
     def train(self, epoch, batch_size):
-        #history stores the model's across each epoch
-        history = self.model.fit(self.X_train, self.y_train, epochs = epoch, batch_size = batch_size)
+        history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
+
+        train_accuracy = history.history['accuracy']
+        val_accuracy = history.history['val_accuracy']
+
+        epoch_number = [i for i in range(1, epoch + 1)]
+
+        plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
+        plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
+        plt.xlabel('Accuracy vs. Epoch')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        plt.show()
 
     #Function for testing the model
     def test(self):
