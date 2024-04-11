@@ -1,11 +1,21 @@
 #====================|Importing Dependencies|====================
 import numpy as np
 import pandas as pd
+from keras.layers import Embedding, MultiHeadAttention, Concatenate, Reshape
+from matplotlib import pyplot as plt
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 #User-defined classes
 from corpus import corpus
 from lstm import lstm
 from cnn import cnn
+from cnn_with_lstm import cnn_with_lstm
+
+import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Dense, Attention
+from tensorflow.keras.models import Model
+from keras import Sequential, Input
+import seaborn as sns
 
 #====================|1. Importing Datasets|====================
 
@@ -41,7 +51,15 @@ my_dataset.show_tweet_length_distribution()
 # my_lstm.test(my_dataset.tokenizer)
 
 #====================|3.2. CNN|====================
-my_cnn = cnn(my_dataset.X_train, my_dataset.y_train, my_dataset.X_test, my_dataset.y_test, 3, my_dataset.max_length)
-my_cnn.train(epoch = 10, batch_size = 32)
-my_cnn.test()
+# my_cnn = cnn(my_dataset.X_train, my_dataset.y_train, my_dataset.X_test, my_dataset.y_test, 3, my_dataset.max_length)
+# my_cnn.train(epoch = 10, batch_size = 32)
+# my_cnn.test()
+
+#====================|3.3. Hybrid Model|====================
+# my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim = 100, vocab_size = my_dataset.vocab_size, num_classes = 3)
+# my_hybrid.train(epoch = 1, batch_size = 32)
+# my_hybrid.test()
+
+
+
 
