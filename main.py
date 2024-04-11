@@ -10,6 +10,7 @@ from corpus import corpus
 from lstm import lstm
 from cnn import cnn
 from cnn_with_lstm import cnn_with_lstm
+from lstm_with_attention import lstm_with_attention
 
 import tensorflow as tf
 from tensorflow.keras.layers import LSTM, Dense, Attention
@@ -60,6 +61,7 @@ my_dataset.show_tweet_length_distribution()
 # my_hybrid.train(epoch = 1, batch_size = 32)
 # my_hybrid.test()
 
-
-
+my_lstm_with_attention = lstm_with_attention(my_dataset.X_train, my_dataset.y_train, my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, my_dataset.vocab_size, embedding_dim = 100, lstm_units = 64, dense_units = 32, num_classes = 3, dropout = 0.2)
+my_lstm_with_attention.train(epoch = 3, batch_size = 64)
+my_lstm_with_attention.test(tokenizer = my_dataset.tokenizer)
 
