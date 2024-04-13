@@ -20,7 +20,7 @@ nltk.download('wordnet')
 
 #Contains information about the hybrid model, and functions for training and testing the model
 class cnn_with_lstm():
-    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, max_seq_length, embedding_dim, vocab_size, num_classes):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, max_seq_length, embedding_dim, vocab_size, num_classes, n_filters, kernel_size, pool_size, n_lstm, dropout, recurrent_dropout):
         #Train and test sets
         self.X_train = X_train
         self.y_train = y_train
@@ -38,24 +38,32 @@ class cnn_with_lstm():
         #Embedding dimension
         self.embedding_dim = embedding_dim
 
+        #CNN-LSTM model hyperparameters
+        self.n_filters = n_filters #number of filters in the convolution layer
+        self.kernel_size = kernel_size
+        self.pool_size = pool_size
+        self.n_lstm = n_lstm #number of lstm units
+        self.dropout = dropout
+        self.recurrent_dropout = recurrent_dropout
+
         #Number of words in the vocabulary (based on the training set)
         self.vocab_size = vocab_size
 
         #Model object
         self.model = self.create_model()
 
-    def create_model(self, filters = 64, kernel_size = 3, pool_size = 2, units = 128, dropout = 0.2, recurrent_dropout = 0.2):
+    def create_model(self):
         model = Sequential()
 
         #Embedding layer
         model.add(Embedding(input_dim = self.vocab_size, output_dim = self.embedding_dim, input_length = self.max_seq_length))
 
         #CNN layer
-        model.add(Conv1D(filters = filters, kernel_size = kernel_size, activation = 'relu', input_shape = (self.max_seq_length, self.embedding_dim)))
-        model.add(MaxPooling1D(pool_size = pool_size))
+        model.add(Conv1D(filters = self.n_filters, kernel_size = self.kernel_size, activation = 'relu', input_shape = (self.max_seq_length, self.embedding_dim)))
+        model.add(MaxPooling1D(pool_size = self.pool_size))
 
         #LSTM layer
-        model.add(LSTM(units = units, dropout = dropout, recurrent_dropout = recurrent_dropout, return_sequences = True))
+        model.add(LSTM(units = self.n_lstm, dropout = self.dropout, recurrent_dropout = self.recurrent_dropout, return_sequences = True))
 
         #Flatten layer
         model.add(Flatten())
@@ -70,13 +78,17 @@ class cnn_with_lstm():
 
     #Function for training the model
     def train(self, epoch, batch_size):
+        #Stores the model's performance at each epoch
         history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
 
+        #Stores the model's training and validation accuracy, to be used for the plot later
         train_accuracy = history.history['accuracy']
         val_accuracy = history.history['val_accuracy']
 
+        #Array for storing the epoch number, to be used for the plot's x-axis
         epoch_number = [i for i in range(1, epoch + 1)]
 
+        #Plotting the accuracy vs. epoch curve
         plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
         plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
         plt.xlabel('Accuracy vs. Epoch')

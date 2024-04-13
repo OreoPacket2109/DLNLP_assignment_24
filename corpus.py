@@ -101,19 +101,19 @@ class corpus():
         fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (10,10))
 
         #Creating first subplot
-        axes[0].pie(self.train_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 14})
-        axes[0].set_title("Training Set", fontsize= 16)
+        axes[0].pie(self.train_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 16})
+        axes[0].set_title("Training Set", fontsize= 18)
 
         #Creating second subplot
-        axes[1].pie(self.val_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 14})
-        axes[1].set_title("Validation Set", fontsize= 16)
+        axes[1].pie(self.val_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 16})
+        axes[1].set_title("Validation Set", fontsize= 18)
 
         #Creating second subplot
-        axes[2].pie(self.test_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 14})
-        axes[2].set_title("Test Set", fontsize= 16)
+        axes[2].pie(self.test_class_distribution, autopct='%1.1f%%', textprops={'fontsize': 16})
+        axes[2].set_title("Test Set", fontsize= 18)
 
         #Adding legend to the plot
-        plt.legend(['Hate Speech (0)', 'Offensive (1)', 'Neither (2)'], bbox_to_anchor=(1.05, 1.0), loc='upper left', fontsize = 14)
+        plt.legend(['Hate Speech (0)', 'Offensive (1)', 'Neither (2)'], bbox_to_anchor=(1.05, 1.0), loc='upper left', fontsize = 16)
         plt.tight_layout()
         plt.show()
 
@@ -224,28 +224,28 @@ class corpus():
         test_length_freqs = self.X_test_length_distribution
 
         #Creates a 1x3 plot. First subplot = training set's tweet length distribution. Second subplot = val set's tweet length distribution. Third subplot = test set's tweet length distribution.
-        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 4))
 
         #Plotting the first subplot
         axes[0].bar(train_tweet_lengths, train_length_freqs)
-        axes[0].set_yscale('log')
-        axes[0].set_xlabel("Tweet Length", fontsize=14)
-        axes[0].set_ylabel("Frequency", fontsize=14)
-        axes[0].set_title("Training Set", fontsize=16)
+        #axes[0].set_yscale('log')
+        axes[0].set_xlabel("Tweet Length", fontsize=16)
+        axes[0].set_ylabel("Frequency", fontsize=16)
+        axes[0].set_title("Training Set", fontsize=18)
 
         #Plotting the second subplot
         axes[1].bar(val_tweet_lengths, val_length_freqs)
-        axes[1].set_yscale('log')
-        axes[1].set_xlabel("Tweet Length", fontsize=14)
-        axes[1].set_ylabel("Frequency", fontsize=14)
-        axes[1].set_title("Test Set", fontsize=16)
+        #axes[1].set_yscale('log')
+        axes[1].set_xlabel("Tweet Length", fontsize=16)
+        axes[1].set_ylabel("Frequency", fontsize=16)
+        axes[1].set_title("Test Set", fontsize=18)
 
         #Plotting the third subplot
         axes[2].bar(test_tweet_lengths, test_length_freqs)
-        axes[2].set_yscale('log')
-        axes[2].set_xlabel("Tweet Length", fontsize=14)
-        axes[2].set_ylabel("Frequency", fontsize=14)
-        axes[2].set_title("Test Set", fontsize=16)
+        #axes[2].set_yscale('log')
+        axes[2].set_xlabel("Tweet Length", fontsize=16)
+        axes[2].set_ylabel("Frequency", fontsize=16)
+        axes[2].set_title("Test Set", fontsize=18)
 
         #Showing the plot
         plt.tight_layout()
