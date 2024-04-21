@@ -10,12 +10,13 @@ from keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, Flatten
 
 #Sklearn
 from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import f1_score
 
 #====================|Class cnn|====================
 
 #Class for storing details about the cnn, and for training and testing the cnn
 class cnn():
-    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, max_length):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, max_length, n_filter, kernel_size, pool_size):
         self.X_train = X_train
         self.y_train = y_train
         self.X_val = X_val
@@ -23,25 +24,36 @@ class cnn():
         self.X_test = X_test
         self.y_test = y_test
 
+        #Hyperparameters
+        self.kernel_size = kernel_size
+        self.n_filter = n_filter
+        self.pool_size = pool_size
+
         #Length of each
         self.max_length = max_length
         self.num_classes = num_classes
         self.model = self.create_model()
 
+        #Model performance
+        self.accuracy = 0
+        self.f1 = 0
+
     #Function for training the model
     def train(self, epoch, batch_size):
         history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
 
-        train_accuracy = history.history['accuracy']
-        val_accuracy = history.history['val_accuracy']
+        train_loss = history.history['loss']
+        val_loss = history.history['val_loss']
 
         epoch_number = [i for i in range(1, epoch + 1)]
 
-        plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
-        plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
-        plt.xlabel('Accuracy vs. Epoch')
-        plt.ylabel('Accuracy')
+        plt.plot(epoch_number, train_loss, label = 'Training Loss')
+        plt.plot(epoch_number, val_loss, label = 'Validation Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
         plt.legend()
+        plt.title("Loss vs. Epoch for CNN Model")
+        plt.grid(True)
         plt.show()
 
     #Function for creating the model
@@ -52,16 +64,16 @@ class cnn():
         model.add(layers.Reshape((self.max_length, 1), input_shape = (self.max_length,)))
 
         #Adds convolution layer
-        model.add(layers.Conv1D(64, 3, activation = 'relu'))
+        model.add(layers.Conv1D(filters = self.n_filter, kernel_size = self.kernel_size, activation = 'relu'))
 
         #Adds max pooling layer
-        model.add(layers.MaxPooling1D(3))
+        model.add(layers.MaxPooling1D(self.pool_size))
 
         #Adds dropout layer, with 10% dropout
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.2))
 
         #Adds dense layer
-        model.add(layers.Dense(64, activation = 'relu'))
+        model.add(layers.Dense(self.n_filter, activation = 'relu'))
 
         #Adds global max pooling layer
         model.add(layers.GlobalMaxPooling1D())
@@ -115,10 +127,13 @@ class cnn():
         sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', annot_kws={"size": 10})  # Adjust the size of the annotation text if needed
         plt.xlabel('Predicted Value')
         plt.ylabel('True Value')
-        plt.suptitle("Confusion Matrix")
+        plt.suptitle("Confusion Matrix for CNN Model")
         plt.gca().set_aspect('auto')  # Set aspect ratio to auto
         plt.show()
 
         #Prints out model test accuracy
         accuracy = accuracy_score(self.y_test, y_pred)
-        print(accuracy)
+        f1 = f1_score(self.y_test, y_pred, average=None)
+
+        self.accuracy = accuracy
+        self.f1 = f1

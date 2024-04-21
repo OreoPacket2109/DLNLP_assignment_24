@@ -3,11 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #Keras
+import tensorflow as tf
 from keras import Sequential
 from keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Embedding
+from keras.utils import to_categorical
 
 #Sklearn
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 import seaborn as sns
 
 #nltk
@@ -52,6 +54,10 @@ class cnn_with_lstm():
         #Model object
         self.model = self.create_model()
 
+        #Model performance
+        self.accuracy = 0
+        self.f1 = 0
+
     def create_model(self):
         model = Sequential()
 
@@ -82,18 +88,20 @@ class cnn_with_lstm():
         history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
 
         #Stores the model's training and validation accuracy, to be used for the plot later
-        train_accuracy = history.history['accuracy']
-        val_accuracy = history.history['val_accuracy']
+        train_loss = history.history['loss']
+        val_loss = history.history['val_loss']
 
         #Array for storing the epoch number, to be used for the plot's x-axis
         epoch_number = [i for i in range(1, epoch + 1)]
 
         #Plotting the accuracy vs. epoch curve
-        plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
-        plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
-        plt.xlabel('Accuracy vs. Epoch')
-        plt.ylabel('Accuracy')
+        plt.plot(epoch_number, train_loss, label = 'Training Loss')
+        plt.plot(epoch_number, val_loss, label = 'Validation Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Loss vs. Epoch')
         plt.legend()
+        plt.grid(True)
         plt.show()
 
     #Function for testing the model
@@ -128,10 +136,20 @@ class cnn_with_lstm():
         sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', annot_kws={"size": 10})  # Adjust the size of the annotation text if needed
         plt.xlabel('Predicted Value')
         plt.ylabel('True Value')
-        plt.suptitle("Confusion Matrix")
+        plt.suptitle("Confusion Matrix for CNN-LSTM Hybrid Model")
         plt.gca().set_aspect('auto')  # Set aspect ratio to auto
         plt.show()
 
-        #Printing out the accuracy
+        y_test_one_hot = to_categorical(self.y_test, num_classes = 3)
+        y_test_one_hot = np.array(y_test_one_hot).astype(np.int32)
+
+        #Getting accuracy and f1 score
         accuracy = accuracy_score(self.y_test, y_pred)
-        print(accuracy)
+        f1 = f1_score(self.y_test, y_pred, average=None)
+        self.accuracy = accuracy
+        self.f1 = f1
+
+    def get_val_loss(self):
+        val_loss = self.model.evaluate(self.X_val, self.y_val)
+        print(val_loss[0])
+        return val_loss[0]

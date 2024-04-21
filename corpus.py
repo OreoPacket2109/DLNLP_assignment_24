@@ -35,7 +35,10 @@ class corpus():
         self.max_length = int(0)
 
         #clean_dataset contains the preprocessed dataset
+        self.class_distribution = [0, 0, 0]
+        self.smallest_class_population = 10000000
         [self.clean_dataset, self.labels] = self.get_clean_dataset(self.raw_dataset, labels)
+        [self.balanced_dataset, self.balanced_labels] = self.balance_dataset(self.clean_dataset, self.labels)
 
         #Creates a tokenizer by using keras' tokenizer
         self.tokenizer = Tokenizer()
@@ -70,8 +73,45 @@ class corpus():
             #Appends temp_tweet's label to temp_label
             temp_label.append(int(temp_tweet.get_label()))
 
+            self.class_distribution[int(labels[i])] = self.class_distribution[int(labels[i])] + 1
+
+        for i in range(3):
+            if (self.class_distribution[i] < self.smallest_class_population):
+                self.smallest_class_population = self.class_distribution[i]
+
+        print(self.smallest_class_population)
         #Returns the cleaned dataset and its corresponding labels
         return [temp_dataset, temp_label]
+
+    def show_old_distribution(self):
+        old_distribution = [0, 0, 0]
+        for i in range(self.number_of_tweets):
+            old_distribution[int(self.labels[i])] = old_distribution[int(self.labels[i])] + 1
+        plt.figure(figsize=(12, 6))
+        plt.pie(old_distribution, labels = ["Hate Speech (0)", "Offensive (1)", "Neither (2)"], autopct='%1.1f%%', textprops={'fontsize': 18})
+        plt.title("Original Dataset's Class Distribution", fontsize = 22)
+        plt.legend(['Hate Speech (0)', 'Offensive (1)', 'Neither (2)'], bbox_to_anchor=(1.05, 1.0), loc='upper left',
+                   fontsize=18)
+        plt.tight_layout()
+        plt.show()
+
+    def balance_dataset(self, dataset, labels):
+        current_distribution = [0, 0, 0]
+        return_dataset = []
+        return_label = []
+
+        for i in range(3):
+            for j in range(self.number_of_tweets):
+                if(int(labels[j]) == i):
+                    return_dataset.append(dataset[j])
+                    return_label.append(labels[j])
+                    current_distribution[i] = current_distribution[i] + 1
+
+                if(current_distribution[i] >= self.smallest_class_population):
+                    break
+
+        print(current_distribution)
+        return return_dataset, return_label
 
 
     #Function for returning the clean tweet, that has index tweet_index
@@ -121,7 +161,7 @@ class corpus():
     def get_train_val_test_data(self):
 
         #Splits dataset into train and test sets, where 80% of the dataset = training set, and 20% = val set
-        X_train, X_val, y_train, y_val = train_test_split(self.clean_dataset, self.labels, test_size = 0.2)
+        X_train, X_val, y_train, y_val = train_test_split(self.balanced_dataset, self.balanced_labels, test_size = 0.2)
 
         #Splits the train set into train and validation
         X_val, X_test, y_val, y_test = train_test_split(X_val, y_val, test_size = 0.5)

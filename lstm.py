@@ -9,7 +9,7 @@ from keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, Flatten
 from tensorflow.keras import layers
 
 #sklearn
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 
 #user-defined classes
 from tweet import tweet
@@ -18,7 +18,7 @@ from corpus import corpus
 #====================|Class lstm|====================
 #class for storing information about the lstm model
 class lstm():
-    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, tweet_length):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, tweet_length, n_lstm, dropout, recurrent_dropout):
         #Train and test sets
         self.X_train = np.reshape(X_train, (X_train.shape[0], tweet_length, -1))
         self.y_train = y_train
@@ -30,15 +30,24 @@ class lstm():
         #Number of classes in the classification task
         self.num_classes = num_classes
 
+        #Hyperparameters
+        self.n_lstm = n_lstm
+        self.dropout = dropout
+        self.recurrent_dropout = recurrent_dropout
+
         #Model stores architecture information about the lstm model
         self.model = self.create_model()
+
+        #Model Performance
+        self.accuracy = 0
+        self.f1 = 0
 
     #Function for creating the lstm model
     def create_model(self):
         model = Sequential()
 
         #Adds LSTM layer with 64 units, 0.2 dropout rate (20% of input units will be randomly set to 0 during training), 0.1 recurrent dropout (10% of connections between recurrent states set to 0 during training)
-        model.add(LSTM(64, dropout = 0.2, recurrent_dropout = 0.1))
+        model.add(LSTM(units = self.n_lstm, dropout = self.dropout, recurrent_dropout = self.recurrent_dropout))
 
         #Adds dropout layer
         model.add(Dropout(0.2))
@@ -65,16 +74,18 @@ class lstm():
     def train(self, epoch, batch_size):
         history = self.model.fit(self.X_train, self.y_train, validation_data = (self.X_val, self.y_val), epochs = epoch, batch_size = batch_size)
 
-        train_accuracy = history.history['accuracy']
-        val_accuracy = history.history['val_accuracy']
+        train_loss = history.history['loss']
+        val_loss = history.history['val_loss']
 
         epoch_number = [i for i in range(1, epoch + 1)]
 
-        plt.plot(epoch_number, train_accuracy, label = 'Training Accuracy')
-        plt.plot(epoch_number, val_accuracy, label = 'Validation Accuracy')
-        plt.xlabel('Accuracy vs. Epoch')
-        plt.ylabel('Accuracy')
+        plt.plot(epoch_number, train_loss, label = 'Training Loss')
+        plt.plot(epoch_number, val_loss, label = 'Validation Loss')
+        plt.xlabel('Loss vs. Epoch')
+        plt.ylabel('Loss')
         plt.legend()
+        plt.title("Loss vs. Epoch for LSTM Model")
+        plt.grid(True)
         plt.show()
 
     #Function for getting model summary
@@ -119,19 +130,13 @@ class lstm():
         sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', annot_kws={"size": 10})  # Adjust the size of the annotation text if needed
         plt.xlabel('Predicted Value')
         plt.ylabel('True Value')
-        plt.suptitle("Confusion Matrix")
+        plt.suptitle("Confusion Matrix for LSTM Model")
         plt.gca().set_aspect('auto')  # Set aspect ratio to auto
         plt.show()
 
-        #Printing out the accuracy score
+        #Prints out model test accuracy
         accuracy = accuracy_score(self.y_test, y_pred)
-        print(accuracy)
+        f1 = f1_score(self.y_test, y_pred, average=None)
 
-        y_misclassified = []
-
-        for i in range(len(self.y_test)):
-            if(self.y_test[i] != y_pred[i]):
-                misclassified_sequence = self.X_test[i].tolist()
-                misclassified_text = tokenizer.sequences_to_texts([misclassified_sequence])
-                print(misclassified_text)
-                #y_misclassified.append([misclassified_text, y_pred[i], self.y_test[i]])
+        self.accuracy = accuracy
+        self.f1 = f1
