@@ -20,7 +20,6 @@ from corpus import corpus
 from lstm import lstm
 from cnn import cnn
 from cnn_with_lstm import cnn_with_lstm
-from lstm_with_attention import lstm_with_attention
 
 #====================|1. Importing Datasets|====================
 
