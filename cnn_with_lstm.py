@@ -22,7 +22,7 @@ nltk.download('wordnet')
 
 #Contains information about the hybrid model, and functions for training and testing the model
 class cnn_with_lstm():
-    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, max_seq_length, embedding_dim, vocab_size, num_classes, n_filters, kernel_size, pool_size, n_lstm, dropout, recurrent_dropout):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, max_seq_length, embedding_dim, vocab_size, num_classes, n_filters, kernel_size, pool_size, n_lstm, dropout, recurrent_dropout, X_test_text):
         #Train and test sets
         self.X_train = X_train
         self.y_train = y_train
@@ -30,6 +30,7 @@ class cnn_with_lstm():
         self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
+        self.X_test_text = X_test_text
 
         #Number of classes in the dataset
         self.num_classes = num_classes
@@ -148,8 +149,15 @@ class cnn_with_lstm():
         f1 = f1_score(self.y_test, y_pred, average=None)
         self.accuracy = accuracy
         self.f1 = f1
+        self.get_mispredicted_tweet(y_pred, 50)
 
     def get_val_loss(self):
         val_loss = self.model.evaluate(self.X_val, self.y_val)
         print(val_loss[0])
         return val_loss[0]
+
+    def get_mispredicted_tweet(self, y_pred, n_tweets):
+        for i in range(n_tweets):
+            if(y_pred[i]!=self.y_test[i]):
+                if(int(y_pred[i]) == 2):
+                    print("Predicted class: " + str(y_pred[i]) + "; True class: " + str(self.y_test[i]) + "; Sentence: " + str(self.X_test_text[i]))

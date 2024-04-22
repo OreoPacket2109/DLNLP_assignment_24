@@ -1,8 +1,18 @@
 #====================|Importing Dependencies|====================
 import numpy as np
 import pandas as pd
-from keras.layers import Embedding, MultiHeadAttention, Concatenate, Reshape
 from matplotlib import pyplot as plt
+import seaborn as sns
+
+#Keras
+from keras.callbacks import History
+import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Dense, Attention
+from tensorflow.keras.models import Model
+from keras import Sequential, Input
+from keras.layers import Embedding, MultiHeadAttention, Concatenate, Reshape
+
+#Sklearn
 from sklearn.metrics import confusion_matrix, accuracy_score
 
 #User-defined classes
@@ -11,12 +21,6 @@ from lstm import lstm
 from cnn import cnn
 from cnn_with_lstm import cnn_with_lstm
 from lstm_with_attention import lstm_with_attention
-
-import tensorflow as tf
-from tensorflow.keras.layers import LSTM, Dense, Attention
-from tensorflow.keras.models import Model
-from keras import Sequential, Input
-import seaborn as sns
 
 #====================|1. Importing Datasets|====================
 
@@ -55,8 +59,8 @@ my_dataset.show_tweet_length_distribution()
 #====================|3. Comparing Model Performances|====================
 
 #====================|3.1. LSTM|====================
-my_lstm = lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val, my_dataset.X_test, my_dataset.y_test, 3, my_dataset.max_length, n_lstm = 64, dropout = 0.2, recurrent_dropout = 0.2)
-my_lstm.train(epoch = 1, batch_size = 32)
+my_lstm = lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val, my_dataset.X_test, my_dataset.y_test, 3, my_dataset.max_length, n_lstm = 64, dropout = 0.2, recurrent_dropout = 0.2, X_test_text=my_dataset.X_test_text)
+my_lstm.train(epoch = 5, batch_size = 32)
 my_lstm.test(my_dataset.tokenizer)
 print("====================")
 print("LSTM F1:")
@@ -65,7 +69,7 @@ print("LSTM Accuracy:")
 print(my_lstm.accuracy)
 
 #====================|3.2. CNN|====================
-my_cnn = cnn(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val, my_dataset.X_test, my_dataset.y_test, 3, my_dataset.max_length, n_filter = 128, kernel_size= 4, pool_size= 8)
+my_cnn = cnn(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val, my_dataset.X_test, my_dataset.y_test, 3, my_dataset.max_length, n_filter = 128, kernel_size= 4, pool_size= 8, X_test_text=my_dataset.X_test_text)
 my_cnn.train(epoch = 5, batch_size = 32)
 my_cnn.test()
 print("====================")
@@ -74,175 +78,10 @@ print(my_cnn.f1)
 print("CNN: Accuracy:")
 print(my_cnn.accuracy)
 #====================|3.3. Hybrid Model|====================
-
-#Testing hyperparameters
-
-#Kernel size
-# kernel_sizes = [2, 4, 8, 16]
-# losses = np.zeros(len(kernel_sizes))
-#
-# for i in range(len(kernel_sizes)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=32, kernel_size=kernel_sizes[i],
-#                               pool_size=4, n_lstm=32, dropout=0.2, recurrent_dropout=0.2)
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=2, batch_size=32)
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-#
-# print(losses)
-# plt.plot(kernel_sizes, losses)
-# plt.grid(True)
-# plt.xlabel("Kernel Size")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs Kernel Size")
-# plt.show()
-
-# #Number of convoluton filters
-# n_filters = [2, 4, 8, 16, 32, 64, 128, 256]
-# losses = np.zeros(len(n_filters))
-#
-# for i in range(len(n_filters)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=n_filters[i], kernel_size=4,
-#                               pool_size=4, n_lstm=32, dropout=0.2, recurrent_dropout=0.2)
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=2, batch_size=32)
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-#
-# print(losses)
-# plt.plot(n_filters, losses)
-# plt.grid(True)
-# plt.xlabel("Number of Filters")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs Number of Filters")
-# plt.show()
-
-#Pooling layer size
-# pool_size = [2, 3, 4, 5, 7, 8, 10]
-# losses = np.zeros(len(pool_size))
-#
-# for i in range(len(pool_size)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=128, kernel_size=4,
-#                               pool_size=pool_size[i], n_lstm=64, dropout=0.2, recurrent_dropout=0.2)
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=2, batch_size=32)
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-#
-# print(losses)
-# plt.plot(pool_size, losses)
-# plt.grid(True)
-# plt.xlabel("Pool Size")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs. Pool Size")
-# plt.show()
-
-
-#Number of LSTM units
-# n_lstm = [2, 4, 8, 16, 32, 64, 128, 256]
-# losses = np.zeros(len(n_lstm))
-#
-# for i in range(len(n_lstm)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=128, kernel_size=4,
-#                               pool_size=8, n_lstm=n_lstm[i], dropout=0.2, recurrent_dropout=0.2)
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=2, batch_size=32)
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-#
-# print(losses)
-# plt.plot(n_lstm, losses)
-# plt.grid(True)
-# plt.xlabel("Number of LSTM Units")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs. Number of LSTM Units")
-# plt.show()
-
-#Epoch
-# epoch = [1,2,3,4,5,6,7,8,9,10]
-# losses = np.zeros(len(epoch))
-#
-# for i in range(len(epoch)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=32, kernel_size=8,
-#                               pool_size=6, n_lstm=16, dropout=0.2, recurrent_dropout=0.2)
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=epoch[i], batch_size=32)
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-#
-# print(losses)
-# plt.plot(epoch, losses)
-# plt.grid(True)
-# plt.xlabel("Number of Epochs")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs. Number of Epochs Used to Train the Model")
-# plt.show()
-
-# #Batch size
-# batchsize = [8, 16, 32, 64, 128, 256]
-# losses = np.zeros(len(batchsize))
-#
-# for i in range(len(batchsize)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=32, kernel_size=8,
-#                               pool_size=6, n_lstm=16, dropout=0.2, recurrent_dropout=0.2)
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=1, batch_size=batchsize[i])
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-#
-# print(losses)
-# plt.plot(batchsize, losses)
-# plt.grid(True)
-# plt.xlabel("Batchsize")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs. Batchsize Used to Train Model")
-# plt.show()
-
-#Recurrent dropout
-# dropout = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-# losses = np.zeros(len(dropout))
-#
-# for i in range(len(dropout)):
-#     my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
-#                               my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
-#                               vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=32, kernel_size=8,
-#                               pool_size=6, n_lstm=16, dropout=0.3, recurrent_dropout=dropout[i])
-#     my_hybrid.model.summary()
-#
-#     my_hybrid.train(epoch=1, batch_size=16)
-#     val_loss = my_hybrid.get_val_loss()
-#     losses[i] = val_loss
-
-# print(losses)
-# plt.plot(dropout, losses)
-# plt.grid(True)
-# plt.xlabel("Dropout")
-# plt.ylabel("Validation Loss")
-# plt.title("Validation Loss vs. Dropout Used to Train Model")
-# plt.show()
-
 my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
                           my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
                           vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=128, kernel_size=4,
-                          pool_size=8, n_lstm=64, dropout=0.2, recurrent_dropout=0.2)
+                          pool_size=8, n_lstm=64, dropout=0.2, recurrent_dropout=0.2, X_test_text=my_dataset.X_test_text)
 my_hybrid.model.summary()
 
 my_hybrid.train(epoch=5, batch_size=64)
@@ -253,11 +92,153 @@ print(my_hybrid.f1)
 print("CNN-LSTM Hybdrid Accuracy:")
 print(my_hybrid.accuracy)
 
-#Embedding dimension
+#====================|4. Hyperparameter Tuning|====================
 
-# my_lstm_with_attention = lstm_with_attention(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val, my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, my_dataset.vocab_size, embedding_dim = 128, lstm_units = 32, dense_units = 16, num_classes = 3, dropout = 0.2)
-# my_lstm_with_attention.train(epoch = 5, batch_size = 64)
-# my_lstm_with_attention.test(tokenizer = my_dataset.tokenizer)
+#User can choose which graph they want to see.
+print("The following section prints out the graphs used during the hypertuning process. The user may choose which graph they want to see by inputting the following numbers:")
+print("1, to print out the graph for Model Loss vs. Kernel Size")
+print("2, to print out the graph for Model Loss vs. Number of Filters")
+print("3, to print out the graph for Model Loss vs. Pool Size")
+print("4, to print out the graph for Model Loss vs. Number of LSTM units")
+print("5, to print out the graph for Model Loss vs. Epoch")
+print("6, to terminate program")
 
+user_input = input()
 
+#Keeps looping until user chooses to terminate the program (by entering 6)
+while(user_input != "6"):
+    #If user enters 1, the program shows them the validation loss vs. kernel size graph
+    if user_input == "1":
+        # Kernel size
+        kernel_sizes = [2, 4, 8, 16]
+        losses = np.zeros(len(kernel_sizes))
 
+        #Trains model with different kernel sizes, and records its validation loss
+        for i in range(len(kernel_sizes)):
+            my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
+                              my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
+                              vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=32, kernel_size=kernel_sizes[i],
+                              pool_size=4, n_lstm=32, dropout=0.2, recurrent_dropout=0.2, X_test_text= my_dataset.X_test_text)
+
+            my_hybrid.train(epoch=2, batch_size=32)
+            val_loss = my_hybrid.get_val_loss()
+            losses[i] = val_loss
+
+        #Plotting the graph
+        plt.plot(kernel_sizes, losses)
+        plt.grid(True)
+        plt.xlabel("Kernel Size")
+        plt.ylabel("Validation Loss")
+        plt.title("Validation Loss vs Kernel Size")
+        plt.show()
+
+    #If user enters 2, the program shows them the validation loss vs. number of conv filters graph
+    elif user_input == "2":
+
+        #Number of convoluton filters
+        n_filters = [2, 4, 8, 16, 32, 64, 128, 256]
+        losses = np.zeros(len(n_filters))
+
+        #Trains the model with different numbers of conv filters, and records their validation loss
+        for i in range(len(n_filters)):
+            my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
+                              my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
+                              vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=n_filters[i], kernel_size=4,
+                              pool_size=4, n_lstm=32, dropout=0.2, recurrent_dropout=0.2, X_test_text= my_dataset.X_test_text)
+
+            my_hybrid.train(epoch=2, batch_size=32)
+            val_loss = my_hybrid.get_val_loss()
+            losses[i] = val_loss
+
+        #Plots the graph
+        plt.plot(n_filters, losses)
+        plt.grid(True)
+        plt.xlabel("Number of Filters")
+        plt.ylabel("Validation Loss")
+        plt.title("Validation Loss vs Number of Filters")
+        plt.show()
+
+    #If the user chooses 3, shows the graph for validation loss vs. pool size
+    elif user_input == "3":
+        #Pool size
+        pool_size = [2, 3, 4, 5, 7, 8, 10]
+        losses = np.zeros(len(pool_size))
+
+        #Trains the model with different max pool sizes, and records its validation loss
+        for i in range(len(pool_size)):
+            my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
+                              my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
+                              vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=128, kernel_size=4,
+                              pool_size=pool_size[i], n_lstm=64, dropout=0.2, recurrent_dropout=0.2, X_test_text= my_dataset.X_test_text)
+
+            my_hybrid.train(epoch=2, batch_size=32)
+            val_loss = my_hybrid.get_val_loss()
+            losses[i] = val_loss
+
+        #Plots graph
+        plt.plot(pool_size, losses)
+        plt.grid(True)
+        plt.xlabel("Pool Size")
+        plt.ylabel("Validation Loss")
+        plt.title("Validation Loss vs. Pool Size")
+        plt.show()
+
+    #If the user chooses 4, program shows the validation loss vs. number of lstm units graph
+    elif user_input == "4":
+
+        #Number of LSTM units
+        n_lstm = [2, 4, 8, 16, 32, 64, 128, 256]
+        losses = np.zeros(len(n_lstm))
+
+        #Trains the model with different numbers of lstm units, and records the ensuring validation loss
+        for i in range(len(n_lstm)):
+            my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
+                              my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
+                              vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=128, kernel_size=4,
+                              pool_size=8, n_lstm=n_lstm[i], dropout=0.2, recurrent_dropout=0.2, X_test_text= my_dataset.X_test_text)
+
+            my_hybrid.train(epoch=2, batch_size=32)
+            val_loss = my_hybrid.get_val_loss()
+            losses[i] = val_loss
+
+        #Plots the graph
+        plt.plot(n_lstm, losses)
+        plt.grid(True)
+        plt.xlabel("Number of LSTM Units")
+        plt.ylabel("Validation Loss")
+        plt.title("Validation Loss vs. Number of LSTM Units")
+        plt.show()
+
+    #If the user chooses 5, program plots the validation loss vs. epoch curve
+    elif user_input == "5":
+
+        #Epoch
+        epoch = [1,2,3,4,5,6,7,8,9,10]
+        losses = np.zeros(len(epoch))
+
+        history = History()
+        my_hybrid = cnn_with_lstm(my_dataset.X_train, my_dataset.y_train, my_dataset.X_val, my_dataset.y_val,
+                                  my_dataset.X_test, my_dataset.y_test, my_dataset.max_length, embedding_dim=128,
+                                  vocab_size=my_dataset.vocab_size, num_classes=3, n_filters=32, kernel_size=8,
+                                  pool_size=6, n_lstm=16, dropout=0.2, recurrent_dropout=0.2,
+                                  X_test_text=my_dataset.X_test_text)
+
+        my_hybrid.train(epoch = 10, batch_size=32)
+
+    #If user enters 6, terminate program
+    elif user_input == "6":
+        break
+
+    #If user doesn't enter something from 1 to 6, request another input
+    else:
+        print("Please enter a number from 1 to 6.")
+
+    print("Input:")
+    print("1, to print out the graph for Model Loss vs. Kernel Size")
+    print("2, to print out the graph for Model Loss vs. Number of Filters")
+    print("3, to print out the graph for Model Loss vs. Pool Size")
+    print("4, to print out the graph for Model Loss vs. Number of LSTM units")
+    print("5, to print out the graph for Model Loss vs. Epoch")
+    print("6, to terminate program")
+
+    user_input = input()

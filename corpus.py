@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 
 #user-defined classes
 from tweet import tweet
+import pandas as pd
 
 #====================|Class corpus|====================
 
@@ -44,6 +45,7 @@ class corpus():
         self.tokenizer = Tokenizer()
 
         #Training and testing sets
+        self.X_test_text = []
         self.X_train, self.X_val, self.X_test, self.y_train, self.y_val, self.y_test, self.y_train_scalar_label, self.y_val_scalar_label = self.get_train_val_test_data()
 
         #Array for storing the distribution of tweet lengths
@@ -171,6 +173,9 @@ class corpus():
 
         #Obtaining vocab size
         self.vocab_size = len(self.tokenizer.word_index) + 1
+
+        #Storing X_test in text form so we can analyse which sentence the model misclassifies
+        self.X_test_text = X_test
 
         #Converting words to sequences based on the tokenizer self.tokenizer
         X_train = self.tokenizer.texts_to_sequences(X_train)

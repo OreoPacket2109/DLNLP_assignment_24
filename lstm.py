@@ -18,7 +18,7 @@ from corpus import corpus
 #====================|Class lstm|====================
 #class for storing information about the lstm model
 class lstm():
-    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, tweet_length, n_lstm, dropout, recurrent_dropout):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, tweet_length, n_lstm, dropout, recurrent_dropout, X_test_text):
         #Train and test sets
         self.X_train = np.reshape(X_train, (X_train.shape[0], tweet_length, -1))
         self.y_train = y_train
@@ -26,6 +26,7 @@ class lstm():
         self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
+        self.X_test_text = X_test_text
 
         #Number of classes in the classification task
         self.num_classes = num_classes
@@ -134,9 +135,16 @@ class lstm():
         plt.gca().set_aspect('auto')  # Set aspect ratio to auto
         plt.show()
 
-        #Prints out model test accuracy
         accuracy = accuracy_score(self.y_test, y_pred)
         f1 = f1_score(self.y_test, y_pred, average=None)
 
         self.accuracy = accuracy
         self.f1 = f1
+
+        self.get_mispredicted_tweet(y_pred, 50)
+
+    def get_mispredicted_tweet(self, y_pred, n_tweets):
+        for i in range(n_tweets):
+            if(y_pred[i]!=self.y_test[i]):
+                if (int(y_pred[i]) == 2):
+                    print("Predicted class: " + str(y_pred[i]) + "; True class: " + str(self.y_test[i]) + "; Sentence: " + str(self.X_test_text[i]))

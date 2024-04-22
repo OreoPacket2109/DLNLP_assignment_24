@@ -16,13 +16,14 @@ from sklearn.metrics import f1_score
 
 #Class for storing details about the cnn, and for training and testing the cnn
 class cnn():
-    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, max_length, n_filter, kernel_size, pool_size):
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test, num_classes, max_length, n_filter, kernel_size, pool_size, X_test_text):
         self.X_train = X_train
         self.y_train = y_train
         self.X_val = X_val
         self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
+        self.X_test_text = X_test_text
 
         #Hyperparameters
         self.kernel_size = kernel_size
@@ -137,3 +138,10 @@ class cnn():
 
         self.accuracy = accuracy
         self.f1 = f1
+        self.get_mispredicted_tweet(y_pred, 50)
+
+    def get_mispredicted_tweet(self, y_pred, n_tweets):
+        for i in range(n_tweets):
+            if(y_pred[i]!=self.y_test[i]):
+                if (int(y_pred[i]) == 2):
+                    print("Predicted class: " + str(y_pred[i]) + "; True class: " + str(self.y_test[i]) + "; Sentence: " + str(self.X_test_text[i]))
