@@ -28,7 +28,7 @@ class tweet():
         #Replaces all words identified by the regex with ""
         return_text = re.sub(regex, "", input_text)
 
-        #Returns the text without html entities
+        #Returns the text without HTML entities
         return return_text
 
     #Function for removing user tags

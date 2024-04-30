@@ -1,6 +1,7 @@
 #====================|Importing Dependencies|====================
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 #Keras
 import tensorflow as tf
@@ -10,7 +11,6 @@ from keras.utils import to_categorical
 
 #Sklearn
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
-import seaborn as sns
 
 #nltk
 import nltk

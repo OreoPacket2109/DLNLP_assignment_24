@@ -23,32 +23,13 @@ from cnn_with_lstm import cnn_with_lstm
 
 #====================|1. Importing Datasets|====================
 
-#Importing first dataset
+#Importing dataset
 dir_a = "Datasets/labeled_data.csv"
 df_a = pd.read_csv(dir_a)
 header = df_a.columns.tolist()
 print(header)
 dataset_a = df_a['tweet']
 labels_a = df_a['class']
-
-# print(type(dataset_a))
-
-# #Importing second dataset
-# dir_b = "Datasets/additional_data.csv"
-# df_b = pd.read_csv(dir_b)
-# dataset_b = df_b[df_b['label'] == 'hate']
-# dataset_b = dataset_b['text']
-# labels_b = pd.Series(np.zeros(len(dataset_b)))
-# dataset_b.reset_index(drop = True, inplace = True)
-#
-# #Combining the two datasets
-# combined_dataset = pd.concat([dataset_a, dataset_b], ignore_index=True)
-# labels_b.reset_index(drop = True, inplace = True)
-# combined_labels = pd.concat([labels_a, labels_b], ignore_index=True)
-#
-# print(labels_a.shape)
-# print(labels_b.shape)
-# print(combined_labels.shape)
 
 #====================|2. Dataset Analysis|====================
 my_dataset = corpus(dataset_a, labels_a)
